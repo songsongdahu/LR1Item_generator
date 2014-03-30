@@ -23,10 +23,22 @@ public class LR1Item {
 	public boolean isTerminal(){
 		char ch = production[position].charAt(0);
 		if(ch>='A'&&ch<='Z'){
-			return true;
-		} else {
 			return false;
+		} else {
+			return true;
 		}
+	}
+	
+	public int getPosition(){
+		return position;
+	}
+	
+	public String getLookahead(){
+		return lookahead;
+	}
+	
+	public void setLookahead(String lookahead){
+		this.lookahead = lookahead;
 	}
 	
 	public String getLeftsymbol(){

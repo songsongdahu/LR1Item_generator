@@ -10,23 +10,24 @@ import java.util.Queue;
 public class LR1 {
 	String[] sym1 = {"A","S","C"};
 	String[] sym2 = {"c","d"};
-	LR1Items G;
-	
-	public LR1(LR1Items G){
-		this.G = G;
-	}
-	
+
 	//一串文法符号的First
 	public ArrayList<String> First1(ArrayList<String> s,LR1Items G){
 		ArrayList<String> result = new ArrayList<String>();
-		if(isTerminal(s.get(0))){
-			//终结符
-			result.add(s.get(0));
-		} else {
-			//非终结符
-			for(int i=0;i<G.size();i++){
-				//遍历G中的产生式
+		int i=0;
+		while(i<s.size()&&ifExist("0",First2(s.get(i),G))){
+			i++;
+		}
+		for(int j=0;j<i+1;j++){
+			if(j<s.size()){
+				result.addAll(First2(s.get(j),G));
 			}
+		}
+		//去除重复项和0
+		selectDistinct(result);
+		if(i==s.size()){
+			//所有的都可以推出“空”
+			result.add("0");
 		}
 		return result;
 	}
@@ -56,12 +57,12 @@ public class LR1 {
 								result.addAll(First2(pro[k],G));
 							}
 						}
+						//去除重复项和0
+						selectDistinct(result);
 						if(j==pro.length){
 							//所有的都可以推出“空”
 							result.add("0");
 						}
-						//去除重复项
-						selectDistinct(result);
 					}
 				}
 			}
@@ -69,23 +70,38 @@ public class LR1 {
 		return result;
 	}
 	
-	//function First
-	public ArrayList<LR1Item> Closure(ArrayList<LR1Item> I){
+	public ArrayList<LR1Item> Closure(ArrayList<LR1Item> I,LR1Items G){
 		Queue<LR1Item> que = new LinkedList<LR1Item>();
 		for(int i=0;i<I.size();i++){
 			que.add(I.get(i));
 		}
 		LR1Item tempI = que.poll();
 		while(tempI!=null){
-			// is terminal 
-			if(tempI.isTerminal()){
+			if(!tempI.isTerminal()){
 				for(int i=0;i<G.size();i++){
-					
+					if(G.get(i).getLeftsymbol().equals(tempI.getProduction()[tempI.getPosition()])){
+						//βa存储到s中
+						ArrayList<String> s = new ArrayList<String>();
+						for(int j=tempI.getPosition()+1;j<tempI.getProduction().length;j++){
+							s.add(tempI.getProduction()[j]);
+						}
+						s.add(tempI.getLookahead());
+						s = First1(s,G);
+						//将B->.γ,b加入到集合I中
+						LR1Item tempJ = G.get(i);
+						for(int j=0;j<s.size();j++){
+							tempJ.setLookahead(s.get(j));
+						}
+						que.add(tempJ);
+					}
 				}
 			}
+			tempI = que.poll();
+			I.add(tempI);
 		}
 		return I;
 	}
+	
 	public ArrayList<LR1Item> Goto(ArrayList<LR1Item> i, String x){
 		
 		return i;
@@ -124,9 +140,12 @@ public class LR1 {
 		return false;
 	}
 	
-	// 去除重复项
+	// 去除重复项和0
 	public void selectDistinct(ArrayList<String> a){
 		for(int i=0;i<a.size();i++){
+			if(a.get(i).equals("0")){
+				a.remove(i);
+			}
 			for(int j=i+1;j<a.size();j++){
 				if(a.get(i).equals(a.get(j))){
 					a.remove(j);
@@ -146,7 +165,7 @@ public class LR1 {
 	}
 	
 	public static void main(String[] args) {
-		/*String sub1[] = {"S"};
+		String sub1[] = {"S"};
 		LR1Item s1 = new LR1Item("A",sub1,"");
 		String sub2[] = {"C","C"};
 		LR1Item s2 = new LR1Item("S",sub2,"");
@@ -159,29 +178,19 @@ public class LR1 {
 		G.add(s1);
 		G.add(s2);
 		G.add(s3);
-		G.add(s4);*/
-		String sub1[] = {"S"};
-		LR1Item s1 = new LR1Item("A",sub1,"");
-		String sub2[] = {"a"};
-		LR1Item s2 = new LR1Item("S",sub2,"");
-		String sub3[] = {"B","C"};
-		LR1Item s3 = new LR1Item("S",sub3,"");
-		String sub4[] = {"b"};
-		LR1Item s4 = new LR1Item("B",sub4,"");
-		String sub5[] = {"0"};
-		LR1Item s5 = new LR1Item("B",sub5,"");
-		String sub6[] = {"c"};
-		LR1Item s6 = new LR1Item("C",sub6,"");
-		
-		LR1Items G = new LR1Items(999);
-		G.add(s1);
-		G.add(s2);
-		G.add(s3);
 		G.add(s4);
-		G.add(s5);
-		G.add(s6);
 		
-		LR1 la = new LR1(G);
-		la.printList(la.First2("A", G));
+		ArrayList<LR1Item> as1 = new ArrayList<LR1Item>();
+		ArrayList<LR1Item> as2 = new ArrayList<LR1Item>();
+		s1.setLookahead("$");
+		as1.add(s1);
+		LR1 la = new LR1();
+		for(int i=0;i<as1.size();i++){
+			System.out.println(as1.get(i));
+		}
+		as2 = la.Closure(as1,G);
+		for(int i=0;i<as2.size();i++){
+			System.out.println(as2.get(i));
+		}
 	}
 }
