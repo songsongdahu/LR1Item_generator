@@ -73,8 +73,9 @@ public class LR1 {
 	//闭包
 	public ArrayList<LR1Item> Closure(ArrayList<LR1Item> I,LR1Items G){
 		Queue<LR1Item> que = new LinkedList<LR1Item>();
-		for(int i=0;i<I.size();i++){
-			que.add(I.get(i));
+		ArrayList<LR1Item> I2 = (ArrayList<LR1Item>) I.clone();
+		for(int i=0;i<I2.size();i++){
+			que.add(I2.get(i));
 		}
 		LR1Item tempI = que.poll();
 		while(tempI!=null){
@@ -83,61 +84,87 @@ public class LR1 {
 					if(G.get(i).getLeftsymbol().equals(tempI.getProduction()[tempI.getPosition()])){
 						//βa存储到s中
 						ArrayList<String> s = new ArrayList<String>();
+						ArrayList<String> r = new ArrayList<String>();
 						for(int j=tempI.getPosition()+1;j<tempI.getProduction().length;j++){
-							s.add(tempI.getProduction()[j]);
+							r.add(tempI.getProduction()[j]);
 						}
-						s.add(tempI.getLookahead());
-						s = First1(s,G);
+						for(int j=0;j<tempI.getLookahead().size();j++){
+							ArrayList<String> t = (ArrayList<String>)r.clone();
+							t.add(tempI.getLookahead().get(j));
+							t = First1(t,G);
+							s.addAll(t);
+						}
+						selectDistinct1(s);
 						//将B->.γ,b加入到集合I中
-						LR1Item tempJ = G.get(i);
-						for(int j=0;j<s.size();j++){
-							tempJ.setLookahead(s.get(j));
-						}
+						LR1Item tempJ = new LR1Item(G.get(i).getLeftsymbol(), G.get(i).getProduction(), G.get(i).getLookahead(), G.get(i).getPosition());
+						tempJ.setLookahead(s);
 						que.add(tempJ);
 					}
 				}
 			}
-			I.add(tempI);
+			I2.add(tempI);
 			tempI = que.poll();
 		}
-		selectDistinct2(I);
-		return I;
+		selectDistinct2(I2);
+		return I2;
 	}
 	
 	//GOTO
 	public ArrayList<LR1Item> Goto(LR1Items I, String x, LR1Items G){
 		ArrayList<LR1Item> J = new ArrayList<LR1Item>();
 		for(int i=0;i<I.size();i++){
-			LR1Item temp = I.get(i);
-			if(temp.getProduction()[temp.getPosition()].equals(x)){
-				temp.setPosition(temp.getPosition()+1);
-				J.add(temp);
+			//防止浅clone
+			LR1Item temp = new LR1Item(I.get(i).getLeftsymbol(), I.get(i).getProduction(), I.get(i).getLookahead(), I.get(i).getPosition());
+			if(temp.getPosition()<temp.getProduction().length){
+				if(temp.getProduction()[temp.getPosition()].equals(x)){
+					temp.setPosition(temp.getPosition()+1);
+					J.add(temp);
+				}
 			}
 		}
 		return Closure(J, G);
 	}
 	
 	//main
-	public void items(LR1Items G){
+	public ArrayList<LR1Items> items(LR1Items G){
 		// initialize
 		String sub1[] = {"S"};
-		LR1Item s1 = new LR1Item("A",sub1,"$");
+		ArrayList<String> s1lh = new ArrayList<String>();
+		s1lh.add("$");
+		LR1Item s1 = new LR1Item("A",sub1,s1lh);
 		LR1Items s = new LR1Items(0);
 		s.add(s1);
 		s.setArray(Closure(s.getArray(), G));
-		System.out.println(s);
 		ArrayList<LR1Items> C = new ArrayList<LR1Items>();
 		C.add(s);
 		
 		// loop
+		int num = 1;
 		for(int i=0;i<C.size();i++){
 			for(int j=0;j<sym1.length;j++){
 				ArrayList<LR1Item> temp = Goto(C.get(i), sym1[j], G);
-				//如果非空并且不在C中
-				if(!temp.equals("")&&)
+				LR1Items temps = new LR1Items(num);
+				temps.setArray(temp);
+				
+				//如果非空并且不在C中则rtn为true
+				boolean rtn = true;
+				if(temp.size()==0){
+					rtn = false;
+				} else {
+					for(int k=0;k<C.size();k++){
+						//GOTO(I,X)在C中
+						if(temps.equals(C.get(k))){
+							rtn = false;
+						}
+					}
+				}
+				if(rtn){
+					C.add(temps);
+					num++;
+				}
 			}
 		}
-		
+		return C;
 	}
 	
 	//判断是否为终结符
@@ -217,7 +244,7 @@ public class LR1 {
 			for(int i=0;i<nl.length()-4;i++){
 				pro[i] = nl.substring(i+3, i+4);
 			}
-			LR1Item s = new LR1Item(ls, pro, "");
+			LR1Item s = new LR1Item(ls, pro);
 			G.add(s);
 			nl = scan.nextLine();
 		}
@@ -229,13 +256,13 @@ public class LR1 {
 		/*LR1Items G = readInput();
 		System.out.println(G);*/
 		String sub1[] = {"S"};
-		LR1Item s1 = new LR1Item("A",sub1,"");
+		LR1Item s1 = new LR1Item("A",sub1);
 		String sub2[] = {"C","C"};
-		LR1Item s2 = new LR1Item("S",sub2,"");
+		LR1Item s2 = new LR1Item("S",sub2);
 		String sub3[] = {"c","C"};
-		LR1Item s3 = new LR1Item("C",sub3,"");
+		LR1Item s3 = new LR1Item("C",sub3);
 		String sub4[] = {"d"};
-		LR1Item s4 = new LR1Item("C",sub4,"");
+		LR1Item s4 = new LR1Item("C",sub4);
 		
 		LR1Items G = new LR1Items(999);
 		G.add(s1);
@@ -243,10 +270,6 @@ public class LR1 {
 		G.add(s3);
 		G.add(s4);
 		
-		ArrayList<LR1Item> as1 = new ArrayList<LR1Item>();
-		ArrayList<LR1Item> as2 = new ArrayList<LR1Item>();
-		s1.setLookahead("$");
-		as1.add(s1);
 		LR1 la = new LR1();
 		/*System.out.println("closure前:");
 		for(int i=0;i<as1.size();i++){
@@ -257,7 +280,10 @@ public class LR1 {
 		for(int i=0;i<as2.size();i++){
 			System.out.println(as2.get(i));
 		}*/
-		la.items(G);
+		ArrayList<LR1Items> C = la.items(G);
+		for(int i=0;i<C.size();i++){
+			System.out.println(C.get(i));
+		}
 		
 	}
 }

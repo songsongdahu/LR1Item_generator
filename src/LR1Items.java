@@ -44,13 +44,23 @@ public class LR1Items {
 		return s;
 	 }
 	 
+	 //不会有重复的LR1Item
 	 public boolean equals(LR1Items anlr){
-		 for(int i=0;i<array.size();i++){
-			 for(int j=0;j<anlr.size();j++){
-				 if(array.get(i).equals(anlr.get(j))){
-					 
+		 int rtn;
+		 if(array.size()==anlr.size()){
+			 for(int i=0;i<array.size();i++){
+				 rtn = 0;
+				 for(int j=0;j<anlr.size();j++){
+					 if(array.get(i).equals(anlr.get(j))){
+						 rtn = 1;
+					 }
+				 }
+				 if(rtn==0){
+					 return false;
 				 }
 			 }
+			 return true;
 		 }
+		return false;
 	 }
 }
