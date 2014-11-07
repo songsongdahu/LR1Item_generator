@@ -2,42 +2,42 @@ import java.util.ArrayList;
 
 
 public class LR1Item {
-	private String leftsymbol;
-	private String[] production;
-	private ArrayList<String> lookahead;
+	private item leftsymbol;
+	private ArrayList<item> production;
+	private ArrayList<item> lookahead;
 	private int position;
 	
-	public LR1Item(String leftsymbol,String[] production){
+	public LR1Item(item leftsymbol,ArrayList<item> production){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.position = 0;
 	}
 	
-	public LR1Item(String leftsymbol,String[] production,ArrayList<String> lookahead){
+	public LR1Item(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.lookahead = lookahead;
 		this.position = 0;
 	}
 	
-	public LR1Item(String leftsymbol,String[] production,ArrayList<String> lookahead,int position){
+	public LR1Item(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead,int position){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.lookahead = lookahead;
 		this.position = position;
 	}
 	
-	// 当前位置是否是非终结符
+	// 当前位置是否是终结符
 	public boolean isTerminal(){
-		if(position==production.length){
+		if(position==production.size()){
 			return true;
 		}
-		char ch = production[position].charAt(0);
-		if(ch>='A'&&ch<='Z'){
-			return false;
+		if(production.get(position).getTml()==0){
+			return true;
 		} else {
-			return true;
+			return false;
 		}
+			
 	}
 	
 	public int getPosition(){
@@ -48,19 +48,19 @@ public class LR1Item {
 		this.position = position;
 	}
 	
-	public ArrayList<String> getLookahead(){
+	public ArrayList<item> getLookahead(){
 		return lookahead;
 	}
 	
-	public void setLookahead(ArrayList<String> lookahead){
+	public void setLookahead(ArrayList<item> lookahead){
 		this.lookahead = lookahead;
 	}
 	
-	public String getLeftsymbol(){
+	public item getLeftsymbol(){
 		return leftsymbol;
 	}
 	
-	public String[] getProduction(){
+	public ArrayList<item> getProduction(){
 		return production;
 	}
 	
@@ -71,8 +71,8 @@ public class LR1Item {
 		if(this.position!=anlr.position){
 			return false;
 		}
-		for(int i=0;i<production.length;i++){
-			if(!this.production[i].equals(anlr.production[i])){
+		for(int i=0;i<production.size();i++){
+			if(!this.production.get(i).equals(anlr.production.get(i))){
 				return false;
 			}
 		}
@@ -84,16 +84,28 @@ public class LR1Item {
 		return true;
 	}
 	
+	public boolean equalsExcpLa(LR1Item anlr){
+		if(this.leftsymbol!=anlr.leftsymbol){
+			return false;
+		}
+		for(int i=0;i<production.size();i++){
+			if(!this.production.get(i).equals(anlr.production.get(i))){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public String toString(){
 		String pro="";
 		String lo="";
-		for(int i=0;i<production.length;i++){
+		for(int i=0;i<production.size();i++){
 			if(i==position){
 				pro += ".";
 			}
-			pro += production[i];
+			pro += production.get(i).getDsb();
 		}
-		if(position==production.length){
+		if(position==production.size()){
 			pro += ".";
 		}
 		if(lookahead!=null&&lookahead.size()!=0){
