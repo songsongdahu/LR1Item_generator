@@ -1,6 +1,7 @@
 /*
 	Author	まつまつ！！
-	Date	2014/05
+	Date	2014/11/07
+	Update	add comments
  */
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -178,6 +179,7 @@ public class LR1 {
 		selDistProd(result);
 		return result;
 	}
+	
 	/*	
 	 * Name			Goto
 	 * Date			2014/05
@@ -311,6 +313,7 @@ public class LR1 {
 		}
 		return LR1_items;
 	}
+	
 	/*	
 	 * Name			printTable
 	 * Date			2014/05
@@ -331,6 +334,7 @@ public class LR1 {
 			System.out.println();
 		}
 	}
+	
 	/*	
 	 * Name			isTerminal
 	 * Date			2014/05
@@ -347,6 +351,7 @@ public class LR1 {
 			return false;
 		}
 	}
+	
 	/*	
 	 * Name			ifExist
 	 * Date			2014/05
@@ -365,6 +370,7 @@ public class LR1 {
 		}
 		return false;
 	}
+	
 	/*	
 	 * Name			selDistItem
 	 * Date			2014/05
@@ -384,6 +390,7 @@ public class LR1 {
 			}
 		}
 	}
+	
 	/*	
 	 * Name			selDistProd
 	 * Date			2014/05
@@ -400,6 +407,7 @@ public class LR1 {
 			}
 		}
 	}
+	
 	/*	
 	 * Name			ifExist
 	 * Date			2014/05
@@ -414,6 +422,7 @@ public class LR1 {
 		}
 		return false;
 	}
+	
 	//print
 	public void printList(ArrayList<String> a){
 		String prt = "";
@@ -422,6 +431,7 @@ public class LR1 {
 		}
 		System.out.println(prt);
 	}
+	
 	//读取产生式
 	public static LR1Items readInput(){
 		LR1Items G = new LR1Items(999);
@@ -449,6 +459,7 @@ public class LR1 {
 		scan.close();
 		return G;
 	}
+	
 	public static void main(String[] args) {
 		LR1Items G = readInput();
 		System.out.println(G);
