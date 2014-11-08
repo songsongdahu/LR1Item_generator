@@ -22,15 +22,15 @@ Symbol:文法符号类，包括终结符，非终结符和ε
 
 示例
 
-S@L@!=@R  S->L=R
+S->L=R    S@L@!=@R  
 
-S@R       S->R
+S->R      S@R       
 
-L@!a@R    L->aR
+L->aR     L@!a@R    
 
-L@!b      L->b
+L->b      L@!b      
 
-R@L       R->L
+R->L      R@L       
 
 *********
 to do:
