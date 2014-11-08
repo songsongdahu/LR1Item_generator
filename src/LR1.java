@@ -1,6 +1,8 @@
 /*
-	Author	まつまつ！！
-	Date	2014/05
+	Author		まつまつ！！
+	Date		2014/05
+	Class		LR1
+	Describe	LR(1)项集生成
  */
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -8,7 +10,7 @@ import java.util.Queue;
 import java.util.Scanner;
 
 public class LR1 {
-	String[] sym1 = {"S","C","c","d","$"};
+	ArrayList<Symbol> symbols;
 	
 	/*	
 	 * Name			firstForString
@@ -26,7 +28,7 @@ public class LR1 {
 		int eps_count=0;
 		
 		//计算eps_count的值||calculate the eps_count
-		while(eps_count<syms.size()&&ifExist("0",first(syms.get(eps_count),gram))){
+		while(eps_count<syms.size()&&ifExist(new Symbol(0),first(syms.get(eps_count),gram))){
 			eps_count++;
 		}
 		
@@ -78,7 +80,7 @@ public class LR1 {
 						result.add(new Symbol(2));
 					} else {
 						//计算eps_count的值||calculate the eps_count
-						while(eps_count<pro.size()&&ifExist("0",first(pro.get(eps_count),gram))){				
+						while(eps_count<pro.size()&&ifExist(new Symbol(0),first(pro.get(eps_count),gram))){				
 							eps_count++;
 						}
 						
@@ -191,7 +193,7 @@ public class LR1 {
 	 * 				LR1Item gram:文法的所有产生式||the total productions of this grammar
 	 * Return		Goto之后的集合||the Symbol set after Goto
 	 */
-	public ArrayList<LR1Pro> Goto(LR1Item pros, String sym, LR1Item gram){
+	public ArrayList<LR1Pro> Goto(LR1Item pros, Symbol sym, LR1Item gram){
 		
 		//定义返回值||define return value
 		ArrayList<LR1Pro> result = new ArrayList<LR1Pro>();
@@ -204,7 +206,7 @@ public class LR1 {
 			//第一个if的作用不明E-R-R-O-R??????????????????????????????????????????????????????????????????????
 			if(pros_clone.getPosition()<pros_clone.getProduction().size()){
 				//移近||shift
-				if(pros_clone.getProduction().get(pros_clone.getPosition()).getDsb().equals(sym)){
+				if(pros_clone.getProduction().get(pros_clone.getPosition()).equals(sym)){
 					pros_clone.setPosition(pros_clone.getPosition()+1);
 					result.add(pros_clone);
 				}
@@ -225,8 +227,9 @@ public class LR1 {
 	public ArrayList<LR1Item> items(LR1Item gram){
 		//初始化||initialize
 		
-		//table的size尚未确定
-		String[][] table = new String[10][5];
+		//parsingTable的size初始为1*symbols.size(),之后随着LR(1)项的增加而增加
+		ArrayList<String[]> parsingTable = new ArrayList<String[]>();
+		parsingTable.add(new String[symbols.size()]);
 		
 		//建立第一项的第一条产生式item1||the first production of the first LR1 Symbol
 		ArrayList<Symbol> item1_pro = new ArrayList<Symbol>();
@@ -263,17 +266,16 @@ public class LR1 {
 				//因为只有一项所以get(0)||the size must be one so "get(0)" here
 				LR1Pro red_item = LR1_items.get(i).get(0);
 				
-				//考虑如何修改为自动生成现在的sym数组E-R-R-O-R
 				//lookahead（可能有多个）决定要填入哪几列||the column(s) that this item will be written depend on the lookahead(s)
 				for(int j=0;j<red_item.getLookahead().size();j++){
-					for(int k=0;k<sym1.length;k++){
+					for(int k=0;k<symbols.size();k++){
 						//k是lookahead的symbol在整个符号表中的位置||k is the No. of lookahead in the total symbol table
-						if(red_item.getLookahead().get(j).getDsb().equals(sym1[k])){
+						if(red_item.getLookahead().get(j).equals(symbols.get(k))){
 							//red_num是产生式的编号||red_num is the No. of production
 							//break???E-R-R-O-R
 							for(int red_num=0;red_num<gram.size();red_num++){
 								if(red_item.equalsExLa(gram.get(red_num))){
-									table[i][k] = "r"+red_num;
+									parsingTable.get(i)[k] = "r"+red_num;
 								}
 							}
 						}
@@ -282,10 +284,10 @@ public class LR1 {
 			}
 			
 			//对符号表中的所有符号尝试进行Goto||for all the symbols in table, try to Goto
-			for(int j=0;j<sym1.length;j++){
+			for(int j=0;j<symbols.size();j++){
 				//Goto之后的项目存放到items_goto中||items_goto is the items after Goto
 				//item_goto的存在意义？E-R-R-O-R
-				ArrayList<LR1Pro> item_goto = Goto(LR1_items.get(i), sym1[j], gram);
+				ArrayList<LR1Pro> item_goto = Goto(LR1_items.get(i), symbols.get(j), gram);
 				LR1Item items_goto = new LR1Item(num);
 				items_goto.setArray(item_goto);
 				
@@ -300,7 +302,7 @@ public class LR1 {
 					for(int k=0;k<LR1_items.size();k++){
 						//items_goto已经在LR1_items中||if items_goto is already in LR1_items
 						if(items_goto.equals(LR1_items.get(k))){
-							table[i][j] = "s"+k;
+							parsingTable.get(i)[j] = "s"+k;
 							isNewItem = false;
 						}
 					}
@@ -309,11 +311,13 @@ public class LR1 {
 				//如果移近出来的是一个新LR1Item，则在LR1_items中添加这个项目并且设置移进的值||if items_goto is a new LR1Pro, then add it to LR1_items and set shift value in the table 
 				if(isNewItem){
 					LR1_items.add(items_goto);
-					table[i][j] = "s"+(LR1_items.size()-1);
+					parsingTable.add(new String[symbols.size()]);
+					parsingTable.get(i)[j] = "s"+(LR1_items.size()-1);
 					num++;
 				}
 			}
 		}
+		printTable(parsingTable);
 		return LR1_items;
 	}
 	
@@ -321,18 +325,18 @@ public class LR1 {
 	 * Name			printTable
 	 * Date			2014/05
 	 * Discribe		打印一个二维数组||print a 2-D array
-	 * Parameters	String[][] table:被打印的二维数组||the array to be printed
+	 * Parameters	ArrayList<String[]> table:被打印的二维数组||the array to be printed
 	 */
-	public void printTable(String[][] table){
+	public void printTable(ArrayList<String[]> table){
 		System.out.print("\t");
-		for(int i=0;i<table[0].length;i++){
-			System.out.print(sym1[i]+"\t");
+		for(int i=0;i<table.get(0).length;i++){
+			System.out.print(symbols.get(i)+"\t");
 		}
 		System.out.println();
-		for(int i=0;i<table.length;i++){
+		for(int i=0;i<table.size();i++){
 			System.out.print("I"+i+"\t");
-			for(int j=0;j<table[0].length;j++){
-				System.out.print(table[i][j]+"\t");
+			for(int j=0;j<table.get(0).length;j++){
+				System.out.print(table.get(i)[j]+"\t");
 			}
 			System.out.println();
 		}
@@ -365,9 +369,9 @@ public class LR1 {
 	 * 				false：不存在||not exist
 	 * E-R-R-O-R	存在意义稀薄，考虑废除？
 	 */
-	public boolean ifExist(String str,ArrayList<Symbol> arr){
+	public boolean ifExist(Symbol sym,ArrayList<Symbol> arr){
 		for(int i=0;i<arr.size();i++){
-			if(str.equals(arr.get(i))){
+			if(sym.equals(arr.get(i))){
 				return true;
 			}
 		}
@@ -427,46 +431,90 @@ public class LR1 {
 	}
 	
 	//print
-	public void printList(ArrayList<String> a){
+	public void printList(ArrayList<Symbol> arr){
 		String prt = "";
-		for(int i=0;i<a.size();i++){
-			prt += a.get(i)+" ";
+		for(int i=0;i<arr.size();i++){
+			prt += arr.get(i)+" ";
 		}
 		System.out.println(prt);
 	}
 	
-	//读取产生式
-	public static LR1Item readInput(){
-		LR1Item G = new LR1Item(999);
+	/*	
+	 * Name			readInput
+	 * Date			2014/11/08
+	 * Discribe		读取输入的产生式，并且构造文法符号集合
+	 */
+	public LR1Item readInput(){
+		//随意设定一个序号，代表输入的文法
+		LR1Item Gram = new LR1Item(999);
+		
+		//按行读取
 		Scanner scan = new Scanner(System.in);
 		String nl = scan.nextLine();
+		
+		//Tsyms用来存储终结符,Nsyms用来存储非终结符
+		ArrayList<Symbol> Tsyms = new ArrayList<Symbol>();
+		ArrayList<Symbol> Nsyms = new ArrayList<Symbol>();
+		
+		
 		while(!nl.equals("")){
-			String[] nls = nl.split("@");
-			Symbol ls = new Symbol(1, nls[0]);
-			ArrayList<Symbol> pro = new ArrayList<Symbol>();
-			for(int i=1;i<nls.length;i++){
-				Symbol p;
-				if(nls[i].equals("0")){
-					p = new Symbol(2);
-				} else if(nls[i].charAt(0)!='!'){//非终结符
-					p = new Symbol(1, nls[i]);
-				} else {
-					p = new Symbol(0, nls[i].substring(1));
-				}
-				pro.add(p);
+			//将文法符号按照@分开
+			String[] syms = nl.split("@");
+			
+			//第一个symbol为leftsymbol，之后的依次添加到production中
+			Symbol lsym = new Symbol(1, syms[0]);
+			
+			//添加符号表中没有的符号
+			if(!ifExist(lsym,Nsyms)){
+				Nsyms.add(lsym);
 			}
-			LR1Pro s = new LR1Pro(ls, pro);
-			G.add(s);
+			
+			ArrayList<Symbol> pro = new ArrayList<Symbol>();
+			for(int i=1;i<syms.length;i++){
+				Symbol sym;
+				if(syms[i].equals("0")){
+					//0表示ε
+					sym = new Symbol(2);
+				} else if(syms[i].charAt(0)!='!'){
+					//非终结符
+					sym = new Symbol(1, syms[i]);
+					//添加符号表中没有的符号
+					if(!ifExist(sym,Nsyms)){
+						Nsyms.add(sym);
+					}
+				} else {
+					//终结符
+					sym = new Symbol(0, syms[i].substring(1));
+					//添加符号表中没有的符号
+					if(!ifExist(sym,Tsyms)){
+						Tsyms.add(sym);
+					}
+				}
+				pro.add(sym);
+			}
+			
+			//将读取的产生式添加到Gram中
+			Gram.add(new LR1Pro(lsym, pro));
+			
+			//继续读下一行
 			nl = scan.nextLine();
 		}
 		scan.close();
-		return G;
+		
+		symbols = new ArrayList<Symbol>();
+		symbols.addAll(Tsyms);
+		symbols.addAll(Nsyms);
+		symbols.add(new Symbol(0,"$"));
+		printList(symbols);
+		
+		return Gram;
 	}
 	
 	public static void main(String[] args) {
-		LR1Item G = readInput();
-		System.out.println(G);
 		LR1 la = new LR1();
+		LR1Item G = la.readInput();
+		System.out.println(G);
+		
 		System.out.println(la.items(G));
 	}
 }
