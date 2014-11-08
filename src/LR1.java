@@ -13,13 +13,13 @@ public class LR1 {
 	 * Name			firstForString
 	 * Date			2014/05
 	 * Discribe		返回一串文法符号的first集||Return the "first" sets for a string of symbol
-	 * Parameters	ArrayList<item> syms:一串文法符号||a string of grammar symbol
-	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
+	 * Parameters	ArrayList<Symbol> syms:一串文法符号||a string of grammar symbol
+	 * 				LR1Item gram:文法的所有产生式||the total productions of this grammar
 	 * Return		first集||"first" set
 	 */
-	public ArrayList<item> firstForString(ArrayList<item> syms,LR1Items gram){
+	public ArrayList<Symbol> firstForString(ArrayList<Symbol> syms,LR1Item gram){
 		//定义返回值||define return value
-		ArrayList<item> result = new ArrayList<item>();
+		ArrayList<Symbol> result = new ArrayList<Symbol>();
 		
 		//eps_count表示s中从第一个可以推出ε的符号的到不能推出ε的符号的计数||eps_count is the count of symbols which can shift to ε(until which cannot)
 		int eps_count=0;
@@ -41,7 +41,7 @@ public class LR1 {
 		
 		//产生式中所有的符号都可以推出ε，则把ε添加到结果中||if all the symbols can shift to ε then add ε to the result
 		if(eps_count==syms.size()){
-			result.add(new item(2));
+			result.add(new Symbol(2));
 		}
 		
 		return result;
@@ -50,13 +50,13 @@ public class LR1 {
 	 * Name			first
 	 * Date			2014/05
 	 * Discribe		返回单个文法符号的first集||Return the "first" sets for a symbol
-	 * Parameters	item sym:一个文法符号||a grammar symbol
-	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
+	 * Parameters	Symbol sym:一个文法符号||a grammar symbol
+	 * 				LR1Item gram:文法的所有产生式||the total productions of this grammar
 	 * Return		first集||"first" set
 	 */
-	public ArrayList<item> first(item sym,LR1Items gram){
+	public ArrayList<Symbol> first(Symbol sym,LR1Item gram){
 		//定义返回值||define return value
-		ArrayList<item> result = new ArrayList<item>();
+		ArrayList<Symbol> result = new ArrayList<Symbol>();
 		
 		if(isTerminal(sym)){
 			//终结符号，直接返回s||terminal symbol, return itself
@@ -66,14 +66,14 @@ public class LR1 {
 			for(int i=0;i<gram.size();i++){
 				if(gram.get(i).getLeftsymbol().equals(sym)){
 					//存在s->xxx的产生式||find a production starting with s
-					ArrayList<item> pro = gram.get(i).getProduction();
+					ArrayList<Symbol> pro = gram.get(i).getProduction();
 					
 					//eps_count表示s中从第一个可以推出ε的符号的到不能推出ε的符号的计数||eps_count is the count of symbols which can shift to ε(until which cannot)
 					int eps_count=0;
 					
 					if(pro.get(0).getTml()==2){
 						//存在s->0的产生式||if s shift to ε, add ε
-						result.add(new item(2));
+						result.add(new Symbol(2));
 					} else {
 						//计算eps_count的值||calculate the eps_count
 						while(eps_count<pro.size()&&ifExist("0",first(pro.get(eps_count),gram))){				
@@ -92,7 +92,7 @@ public class LR1 {
 						
 						//产生式中所有的符号都可以推出ε，则把ε添加到结果中||if all the symbols can shift to ε then add ε to the result
 						if(eps_count==pro.size()){
-							result.add(new item(2));
+							result.add(new Symbol(2));
 						}
 					}
 				}
@@ -105,10 +105,10 @@ public class LR1 {
 	 * Date			2014/05
 	 * Discribe		Return the closure sets for productions||返回产生式的closure集
 	 * Parameters	ArrayList<LR1Pro> pro:一条产生式||a production
-	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
+	 * 				LR1Item gram:文法的所有产生式||the total productions of this grammar
 	 * Return		closure集||closure set
 	 */
-	public ArrayList<LR1Pro> Closure(ArrayList<LR1Pro> pro,LR1Items gram){
+	public ArrayList<LR1Pro> Closure(ArrayList<LR1Pro> pro,LR1Item gram){
 		
 		//定义返回值||define return value
 		ArrayList<LR1Pro> result = new ArrayList<LR1Pro>();
@@ -131,16 +131,16 @@ public class LR1 {
 			//tempI为null意味着结束||if tempI is null, stop the loop
 			
 			if(!tempI.isTerminal()){
-				//如果产生式当前项（即将要移近的下一项）是非终结符||if the item of production is nonterminal
+				//如果产生式当前项（即将要移近的下一项）是非终结符
 				
 				//找到这个非终结符的所有产生式并添加到queue中||this loop is to find the production starting with tempI, and add them to the queue
 				for(int i=0;i<gram.size();i++){
 					if(gram.get(i).getLeftsymbol().equals(tempI.getProduction().get(tempI.getPosition()))){
 						//s用来存放lookahead||sym_la is used to save the lookahead symbol
-						ArrayList<item> sym_la = new ArrayList<item>();
+						ArrayList<Symbol> sym_la = new ArrayList<Symbol>();
 						
 						//sym_aft用来暂存产生式中当前处理的非终结符之后的部分||sym_aft is the part after the nonterminal symbol above
-						ArrayList<item> sym_aft = new ArrayList<item>();
+						ArrayList<Symbol> sym_aft = new ArrayList<Symbol>();
 						for(int j=tempI.getPosition()+1;j<tempI.getProduction().size();j++){
 							sym_aft.add(tempI.getProduction().get(j));
 						}
@@ -148,7 +148,7 @@ public class LR1 {
 						//对每个lookahead进行循环||loop all of lookahead of this production
 						for(int j=0;j<tempI.getLookahead().size();j++){
 							//为了不改变sym_aft（要多次使用）此处对sym_aft进行clone||sym_aft_clone is the clone of sym_aft to not change the old one(because it will be used many times)
-							ArrayList<item> sym_aft_clone = (ArrayList<item>)sym_aft.clone();
+							ArrayList<Symbol> sym_aft_clone = (ArrayList<Symbol>)sym_aft.clone();
 							
 							//将sym_la和sym_aft连接起来，求first集，结果即是tempJ的lookahead||the "first" set of (sym_aft+sym_la) is the lookahead of tempJ
 							sym_aft_clone.add(tempI.getLookahead().get(j));
@@ -182,12 +182,12 @@ public class LR1 {
 	 * Name			Goto
 	 * Date			2014/05
 	 * Discribe		进行Goto操作||just Goto:)
-	 * Parameters	LR1Items pros:一组产生式||a set of production
+	 * Parameters	LR1Item pros:一组产生式||a set of production
 	 * 				String sym:文法符号||grammar symbol
-	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
-	 * Return		Goto之后的集合||the item set after Goto
+	 * 				LR1Item gram:文法的所有产生式||the total productions of this grammar
+	 * Return		Goto之后的集合||the Symbol set after Goto
 	 */
-	public ArrayList<LR1Pro> Goto(LR1Items pros, String sym, LR1Items gram){
+	public ArrayList<LR1Pro> Goto(LR1Item pros, String sym, LR1Item gram){
 		
 		//定义返回值||define return value
 		ArrayList<LR1Pro> result = new ArrayList<LR1Pro>();
@@ -214,29 +214,29 @@ public class LR1 {
 	 * Name			items
 	 * Date			2014/05
 	 * Discribe		LR1项集生成||generate the LR1 items
-	 * Parameters	LR1Items gram:文法的所有产生式||the total productions of this grammar
+	 * Parameters	LR1Item gram:文法的所有产生式||the total productions of this grammar
 	 * Return		LR1项集||LR1 items
 	 */
-	public ArrayList<LR1Items> items(LR1Items gram){
+	public ArrayList<LR1Item> items(LR1Item gram){
 		//初始化||initialize
 		
 		//table的size尚未确定
 		String[][] table = new String[10][5];
 		
-		//建立第一项的第一条产生式item1||the first production of the first LR1 item
-		ArrayList<item> item1_pro = new ArrayList<item>();
+		//建立第一项的第一条产生式item1||the first production of the first LR1 Symbol
+		ArrayList<Symbol> item1_pro = new ArrayList<Symbol>();
 		item1_pro.add(gram.get(0).getLeftsymbol());
-		ArrayList<item> item1_lh = new ArrayList<item>();
-		item1_lh.add(new item(0,"$"));
-		LR1Pro item1 = new LR1Pro(new item(1,"S'"),item1_pro,item1_lh);
+		ArrayList<Symbol> item1_lh = new ArrayList<Symbol>();
+		item1_lh.add(new Symbol(0,"$"));
+		LR1Pro item1 = new LR1Pro(new Symbol(1,"S'"),item1_pro,item1_lh);
 		
 		//item1_clo是item1的闭包||item1_clo is the closure set of item1
-		LR1Items item1_clo = new LR1Items(0);
+		LR1Item item1_clo = new LR1Item(0);
 		item1_clo.add(item1);
 		item1_clo.setArray(Closure(item1_clo.getArray(), gram));
 		
 		//LR1_items用来存放所有的LR1项目||LR1_items is used to save the LR1 items
-		ArrayList<LR1Items> LR1_items = new ArrayList<LR1Items>();
+		ArrayList<LR1Item> LR1_items = new ArrayList<LR1Item>();
 		
 		//加入第一项||add the first item
 		LR1_items.add(item1_clo);
@@ -267,7 +267,7 @@ public class LR1 {
 							//red_num是产生式的编号||red_num is the No. of production
 							//break???E-R-R-O-R
 							for(int red_num=0;red_num<gram.size();red_num++){
-								if(red_item.equalsExcpLa(gram.get(red_num))){
+								if(red_item.equalsExLa(gram.get(red_num))){
 									table[i][k] = "r"+red_num;
 								}
 							}
@@ -281,7 +281,7 @@ public class LR1 {
 				//Goto之后的项目存放到items_goto中||items_goto is the items after Goto
 				//item_goto的存在意义？E-R-R-O-R
 				ArrayList<LR1Pro> item_goto = Goto(LR1_items.get(i), sym1[j], gram);
-				LR1Items items_goto = new LR1Items(num);
+				LR1Item items_goto = new LR1Item(num);
 				items_goto.setArray(item_goto);
 				
 				//如果非空并且不在LR1_items中则isNewItem为true||if items_goto is not null and not already in LR1_items, make isNewItem value true
@@ -335,12 +335,12 @@ public class LR1 {
 	 * Name			isTerminal
 	 * Date			2014/05
 	 * Discribe		判断一个符号是否为终结符||judge whether the symbol is a terminal symbol or not
-	 * Parameters	item sym:被判断的符号||the symbol is to be judged
+	 * Parameters	Symbol sym:被判断的符号||the symbol is to be judged
 	 * Return		true:终结符||terminal symbol
 	 * 				false:非终结符||nonterminal symbol
 	 * E-R-R-O-R	存在意义稀薄，考虑废除？
 	 */
-	public boolean isTerminal(item sym){
+	public boolean isTerminal(Symbol sym){
 		if(sym.getTml()==0){
 			return true;
 		} else {
@@ -351,13 +351,13 @@ public class LR1 {
 	 * Name			ifExist
 	 * Date			2014/05
 	 * Discribe		判断一个字符是否已经在序列中（在计算first集，判断一个文法符号是否能推导出ε时使用）||judge whether the string is already in the array or not
-	 * Parameters	item sym:被判断的string||the string is to be judged
-	 * 				ArrayList<item> arr
+	 * Parameters	Symbol sym:被判断的string||the string is to be judged
+	 * 				ArrayList<Symbol> arr
 	 * Return		true:存在||exist
 	 * 				false：不存在||not exist
 	 * E-R-R-O-R	存在意义稀薄，考虑废除？
 	 */
-	public boolean ifExist(String str,ArrayList<item> arr){
+	public boolean ifExist(String str,ArrayList<Symbol> arr){
 		for(int i=0;i<arr.size();i++){
 			if(str.equals(arr.get(i))){
 				return true;
@@ -369,9 +369,9 @@ public class LR1 {
 	 * Name			selDistItem
 	 * Date			2014/05
 	 * Discribe		去除文法符号数组中的重复项和ε||delete the duplicate items and ε in the array of grammar symbol
-	 * Parameters	ArrayList<item> arr:文法符号数组
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
 	 */
-	public void selDistItem(ArrayList<item> arr){
+	public void selDistItem(ArrayList<Symbol> arr){
 		for(int i=0;i<arr.size();i++){
 			if(arr.get(i).getTml()==2){
 				arr.remove(i);
@@ -388,7 +388,7 @@ public class LR1 {
 	 * Name			selDistProd
 	 * Date			2014/05
 	 * Discribe		去除一个LR1项中的重复表达式||delete the duplicate productions in the LR1 item
-	 * Parameters	ArrayList<item> arr:LR1项中的产生式集合
+	 * Parameters	ArrayList<Symbol> arr:LR1项中的产生式集合
 	 */
 	public void selDistProd(ArrayList<LR1Pro> arr){
 		for(int i=0;i<arr.size();i++){
@@ -404,9 +404,9 @@ public class LR1 {
 	 * Name			ifExist
 	 * Date			2014/05
 	 * Discribe		判断一个LR1 item是否已经在数组中||judge whether the LR1 item is already in the array or not
-	 * Parameters	ArrayList<item> arr:文法符号数组
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
 	 */
-	public boolean ifExist(LR1Items lr, ArrayList<LR1Items> ar){
+	public boolean ifExist(LR1Item lr, ArrayList<LR1Item> ar){
 		for(int i=0;i<ar.size();i++){
 			if(lr.equals(ar.get(i))){
 				return true;
@@ -423,22 +423,22 @@ public class LR1 {
 		System.out.println(prt);
 	}
 	//读取产生式
-	public static LR1Items readInput(){
-		LR1Items G = new LR1Items(999);
+	public static LR1Item readInput(){
+		LR1Item G = new LR1Item(999);
 		Scanner scan = new Scanner(System.in);
 		String nl = scan.nextLine();
 		while(!nl.equals("")){
 			String[] nls = nl.split("@");
-			item ls = new item(1, nls[0]);
-			ArrayList<item> pro = new ArrayList<item>();
+			Symbol ls = new Symbol(1, nls[0]);
+			ArrayList<Symbol> pro = new ArrayList<Symbol>();
 			for(int i=1;i<nls.length;i++){
-				item p;
+				Symbol p;
 				if(nls[i].equals("0")){
-					p = new item(2);
+					p = new Symbol(2);
 				} else if(nls[i].charAt(0)!='!'){//非终结符
-					p = new item(1, nls[i]);
+					p = new Symbol(1, nls[i]);
 				} else {
-					p = new item(0, nls[i].substring(1));
+					p = new Symbol(0, nls[i].substring(1));
 				}
 				pro.add(p);
 			}
@@ -450,7 +450,7 @@ public class LR1 {
 		return G;
 	}
 	public static void main(String[] args) {
-		LR1Items G = readInput();
+		LR1Item G = readInput();
 		System.out.println(G);
 		LR1 la = new LR1();
 		System.out.println(la.items(G));

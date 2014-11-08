@@ -1,14 +1,14 @@
 
-public class item {
+public class Symbol {
 	private int tml;//0 ÖÕ½á·û 1 ·ÇÖÕ½á·û 2¿Õ
 	private String dsb;//ÃèÊö
 	
-	public item(int tml){
+	public Symbol(int tml){
 		this.tml = tml;
 		this.dsb = "";
 	}
 	
-	public item(int tml, String dsb){
+	public Symbol(int tml, String dsb){
 		this.tml = tml;
 		this.dsb = dsb;
 	}
@@ -29,7 +29,7 @@ public class item {
 		this.dsb = dsb;
 	}
 	
-	public boolean equals(item anit){
+	public boolean equals(Symbol anit){
 		if(this.tml==anit.tml&&this.dsb.equals(anit.dsb)){
 			return true;
 		} else {
