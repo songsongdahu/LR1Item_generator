@@ -1,26 +1,31 @@
+/*
+	Author		まつまつ！！
+	Date		2014/05
+	Class		LR1Pro
+	Describe	LR1Pro类代表LR1的产生式，形如S->A.B (a/$)
+ */
 import java.util.ArrayList;
 
-
-public class LR1Item {
+public class LR1Pro {
 	private item leftsymbol;
 	private ArrayList<item> production;
 	private ArrayList<item> lookahead;
 	private int position;
 	
-	public LR1Item(item leftsymbol,ArrayList<item> production){
+	public LR1Pro(item leftsymbol,ArrayList<item> production){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.position = 0;
 	}
 	
-	public LR1Item(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead){
+	public LR1Pro(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.lookahead = lookahead;
 		this.position = 0;
 	}
 	
-	public LR1Item(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead,int position){
+	public LR1Pro(item leftsymbol,ArrayList<item> production,ArrayList<item> lookahead,int position){
 		this.leftsymbol = leftsymbol;
 		this.production = production;
 		this.lookahead = lookahead;
@@ -64,7 +69,7 @@ public class LR1Item {
 		return production;
 	}
 	
-	public boolean equals(LR1Item anlr){
+	public boolean equals(LR1Pro anlr){
 		if(this.leftsymbol!=anlr.leftsymbol){
 			return false;
 		}
@@ -84,7 +89,7 @@ public class LR1Item {
 		return true;
 	}
 	
-	public boolean equalsExcpLa(LR1Item anlr){
+	public boolean equalsExcpLa(LR1Pro anlr){
 		if(this.leftsymbol!=anlr.leftsymbol){
 			return false;
 		}

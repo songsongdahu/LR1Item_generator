@@ -104,20 +104,20 @@ public class LR1 {
 	 * Name			Closure
 	 * Date			2014/05
 	 * Discribe		Return the closure sets for productions||返回产生式的closure集
-	 * Parameters	ArrayList<LR1Item> pro:一条产生式||a production
+	 * Parameters	ArrayList<LR1Pro> pro:一条产生式||a production
 	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
 	 * Return		closure集||closure set
 	 */
-	public ArrayList<LR1Item> Closure(ArrayList<LR1Item> pro,LR1Items gram){
+	public ArrayList<LR1Pro> Closure(ArrayList<LR1Pro> pro,LR1Items gram){
 		
 		//定义返回值||define return value
-		ArrayList<LR1Item> result = new ArrayList<LR1Item>();
+		ArrayList<LR1Pro> result = new ArrayList<LR1Pro>();
 		
 		//使用queue来计算closure集||use a queue to calculate the closure set
-		Queue<LR1Item> que = new LinkedList<LR1Item>();
+		Queue<LR1Pro> que = new LinkedList<LR1Pro>();
 		
 		//为了不改变之前的产生式集，所有计算都建立在克隆的产生式集中||all the action is on the cloned productions (to protect the original one)
-		ArrayList<LR1Item> pro_clone = (ArrayList<LR1Item>) pro.clone();
+		ArrayList<LR1Pro> pro_clone = (ArrayList<LR1Pro>) pro.clone();
 		
 		//将所有产生式添加到queue中||add all productions to queue
 		for(int i=0;i<pro_clone.size();i++){
@@ -125,7 +125,7 @@ public class LR1 {
 		}
 		
 		//弹出第一条产生式||pump the first one
-		LR1Item tempI = que.poll();
+		LR1Pro tempI = que.poll();
 		
 		while(tempI!=null){
 			//tempI为null意味着结束||if tempI is null, stop the loop
@@ -160,7 +160,7 @@ public class LR1 {
 						selDistItem(sym_la);
 						
 						//将B->.γ,b加入到队列中||tempJ is to be saved the production which will be added to queue
-						LR1Item tempJ = new LR1Item(gram.get(i).getLeftsymbol(), gram.get(i).getProduction(), gram.get(i).getLookahead(), gram.get(i).getPosition());
+						LR1Pro tempJ = new LR1Pro(gram.get(i).getLeftsymbol(), gram.get(i).getProduction(), gram.get(i).getLookahead(), gram.get(i).getPosition());
 						tempJ.setLookahead(sym_la);
 						que.add(tempJ);
 					}
@@ -187,15 +187,15 @@ public class LR1 {
 	 * 				LR1Items gram:文法的所有产生式||the total productions of this grammar
 	 * Return		Goto之后的集合||the item set after Goto
 	 */
-	public ArrayList<LR1Item> Goto(LR1Items pros, String sym, LR1Items gram){
+	public ArrayList<LR1Pro> Goto(LR1Items pros, String sym, LR1Items gram){
 		
 		//定义返回值||define return value
-		ArrayList<LR1Item> result = new ArrayList<LR1Item>();
+		ArrayList<LR1Pro> result = new ArrayList<LR1Pro>();
 		
 		//对每个产生式进行移进操作||shift for every production
 		for(int i=0;i<pros.size();i++){
 			//防止浅clone||deep clone
-			LR1Item pros_clone = new LR1Item(pros.get(i).getLeftsymbol(), pros.get(i).getProduction(), pros.get(i).getLookahead(), pros.get(i).getPosition());
+			LR1Pro pros_clone = new LR1Pro(pros.get(i).getLeftsymbol(), pros.get(i).getProduction(), pros.get(i).getLookahead(), pros.get(i).getPosition());
 			
 			//第一个if的作用不明E-R-R-O-R??????????????????????????????????????????????????????????????????????
 			if(pros_clone.getPosition()<pros_clone.getProduction().size()){
@@ -228,7 +228,7 @@ public class LR1 {
 		item1_pro.add(gram.get(0).getLeftsymbol());
 		ArrayList<item> item1_lh = new ArrayList<item>();
 		item1_lh.add(new item(0,"$"));
-		LR1Item item1 = new LR1Item(new item(1,"S'"),item1_pro,item1_lh);
+		LR1Pro item1 = new LR1Pro(new item(1,"S'"),item1_pro,item1_lh);
 		
 		//item1_clo是item1的闭包||item1_clo is the closure set of item1
 		LR1Items item1_clo = new LR1Items(0);
@@ -256,7 +256,7 @@ public class LR1 {
 			//是规约项，将"r+产生式的编号"加入表中||if the production is a production of reduce, add "r+the number of the reduce production" to the table
 			if(isReduce){
 				//因为只有一项所以get(0)||the size must be one so "get(0)" here
-				LR1Item red_item = LR1_items.get(i).get(0);
+				LR1Pro red_item = LR1_items.get(i).get(0);
 				
 				//考虑如何修改为自动生成现在的sym数组E-R-R-O-R
 				//lookahead（可能有多个）决定要填入哪几列||the column(s) that this item will be written depend on the lookahead(s)
@@ -280,7 +280,7 @@ public class LR1 {
 			for(int j=0;j<sym1.length;j++){
 				//Goto之后的项目存放到items_goto中||items_goto is the items after Goto
 				//item_goto的存在意义？E-R-R-O-R
-				ArrayList<LR1Item> item_goto = Goto(LR1_items.get(i), sym1[j], gram);
+				ArrayList<LR1Pro> item_goto = Goto(LR1_items.get(i), sym1[j], gram);
 				LR1Items items_goto = new LR1Items(num);
 				items_goto.setArray(item_goto);
 				
@@ -301,7 +301,7 @@ public class LR1 {
 					}
 				}
 				
-				//如果移近出来的是一个新LR1Item，则在LR1_items中添加这个项目并且设置移进的值||if items_goto is a new LR1Item, then add it to LR1_items and set shift value in the table 
+				//如果移近出来的是一个新LR1Item，则在LR1_items中添加这个项目并且设置移进的值||if items_goto is a new LR1Pro, then add it to LR1_items and set shift value in the table 
 				if(isNewItem){
 					LR1_items.add(items_goto);
 					table[i][j] = "s"+(LR1_items.size()-1);
@@ -390,7 +390,7 @@ public class LR1 {
 	 * Discribe		去除一个LR1项中的重复表达式||delete the duplicate productions in the LR1 item
 	 * Parameters	ArrayList<item> arr:LR1项中的产生式集合
 	 */
-	public void selDistProd(ArrayList<LR1Item> arr){
+	public void selDistProd(ArrayList<LR1Pro> arr){
 		for(int i=0;i<arr.size();i++){
 			for(int j=i+1;j<arr.size();j++){
 				if(arr.get(i).equals(arr.get(j))){
@@ -442,7 +442,7 @@ public class LR1 {
 				}
 				pro.add(p);
 			}
-			LR1Item s = new LR1Item(ls, pro);
+			LR1Pro s = new LR1Pro(ls, pro);
 			G.add(s);
 			nl = scan.nextLine();
 		}

@@ -2,16 +2,16 @@ import java.util.ArrayList;
 
 
 public class LR1Items {
-	 private ArrayList<LR1Item> array;
+	 private ArrayList<LR1Pro> array;
 	 private int seq;
 	 
 	 public LR1Items(int seq){
-		 array = new ArrayList<LR1Item>();
+		 array = new ArrayList<LR1Pro>();
 		 this.seq = seq;
 	 }
 	 
-	 public LR1Items(ArrayList<LR1Item> array, int seq){
-		 array = new ArrayList<LR1Item>();
+	 public LR1Items(ArrayList<LR1Pro> array, int seq){
+		 array = new ArrayList<LR1Pro>();
 		 this.array = array;
 		 this.seq = seq;
 	 }
@@ -20,19 +20,19 @@ public class LR1Items {
 		 return array.size();
 	 }
 	 
-	 public void add(LR1Item i){
+	 public void add(LR1Pro i){
 		 this.array.add(i);
 	 }
 	 
-	 public LR1Item get(int i){
+	 public LR1Pro get(int i){
 		 return this.array.get(i);	 
 	 }
 	 
-	 public ArrayList<LR1Item> getArray(){
+	 public ArrayList<LR1Pro> getArray(){
 		 return this.array;
 	 }
 	 
-	 public void setArray(ArrayList<LR1Item> array){
+	 public void setArray(ArrayList<LR1Pro> array){
 		 this.array = array;
 	 }
 	 
