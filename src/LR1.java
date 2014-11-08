@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 public class LR1 {
 	String[] sym1 = {"S","C","c","d","$"};
+	
 	/*	
 	 * Name			firstForString
 	 * Date			2014/05
@@ -46,6 +47,7 @@ public class LR1 {
 		
 		return result;
 	}
+	
 	/*	
 	 * Name			first
 	 * Date			2014/05
@@ -100,6 +102,7 @@ public class LR1 {
 		}
 		return result;
 	}
+	
 	/*	
 	 * Name			Closure
 	 * Date			2014/05
@@ -178,6 +181,7 @@ public class LR1 {
 		selDistProd(result);
 		return result;
 	}
+	
 	/*	
 	 * Name			Goto
 	 * Date			2014/05
@@ -210,6 +214,7 @@ public class LR1 {
 		//返回移近之后的闭包集||return the closure set after shifting
 		return Closure(result, gram);
 	}
+	
 	/*	
 	 * Name			items
 	 * Date			2014/05
@@ -311,6 +316,7 @@ public class LR1 {
 		}
 		return LR1_items;
 	}
+	
 	/*	
 	 * Name			printTable
 	 * Date			2014/05
@@ -331,6 +337,7 @@ public class LR1 {
 			System.out.println();
 		}
 	}
+	
 	/*	
 	 * Name			isTerminal
 	 * Date			2014/05
@@ -347,6 +354,7 @@ public class LR1 {
 			return false;
 		}
 	}
+	
 	/*	
 	 * Name			ifExist
 	 * Date			2014/05
@@ -365,6 +373,7 @@ public class LR1 {
 		}
 		return false;
 	}
+	
 	/*	
 	 * Name			selDistItem
 	 * Date			2014/05
@@ -384,6 +393,7 @@ public class LR1 {
 			}
 		}
 	}
+	
 	/*	
 	 * Name			selDistProd
 	 * Date			2014/05
@@ -400,6 +410,7 @@ public class LR1 {
 			}
 		}
 	}
+	
 	/*	
 	 * Name			ifExist
 	 * Date			2014/05
@@ -414,6 +425,7 @@ public class LR1 {
 		}
 		return false;
 	}
+	
 	//print
 	public void printList(ArrayList<String> a){
 		String prt = "";
@@ -422,6 +434,7 @@ public class LR1 {
 		}
 		System.out.println(prt);
 	}
+	
 	//读取产生式
 	public static LR1Item readInput(){
 		LR1Item G = new LR1Item(999);
@@ -449,6 +462,7 @@ public class LR1 {
 		scan.close();
 		return G;
 	}
+	
 	public static void main(String[] args) {
 		LR1Item G = readInput();
 		System.out.println(G);
