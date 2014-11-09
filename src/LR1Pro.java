@@ -48,6 +48,11 @@ public class LR1Pro {
 		return lookahead;
 	}
 	
+	public void addLookahead(ArrayList<Symbol> lasym){
+		lookahead.addAll(lasym);
+		selDistItem(lookahead);
+	}
+	
 	public void setLookahead(ArrayList<Symbol> lookahead){
 		this.lookahead = lookahead;
 	}
@@ -58,6 +63,26 @@ public class LR1Pro {
 	
 	public ArrayList<Symbol> getProduction(){
 		return production;
+	}
+	
+	/*	
+	 * Name			selDistItem
+	 * Date			2014/05
+	 * Discribe		去除文法符号数组(lookahead)中的重复项和ε
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
+	 */
+	public void selDistItem(ArrayList<Symbol> arr){
+		for(int i=0;i<arr.size();i++){
+			if(arr.get(i).getTml()==2){
+				arr.remove(i);
+			}
+			for(int j=i+1;j<arr.size();j++){
+				if(arr.get(i).equals(arr.get(j))){
+					arr.remove(j);
+					j--;
+				}
+			}
+		}
 	}
 	
 	/*	
