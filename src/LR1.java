@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.Scanner;
 
 public class LR1 {
+	//symbols用来储存所有的文法符号(为了构建分析表)
 	ArrayList<Symbol> symbols;
 	
 	/*	
@@ -32,7 +33,7 @@ public class LR1 {
 			eps_count++;
 		}
 		
-		//result的值就是所有可以推出ε的符号（直到不能）的first集的并
+		//result的值就是所有可以推出ε的符号(直到不能)的first集的并
 		for(int i=0;i<eps_count+1;i++){
 			if(i<syms.size()){
 				result.addAll(first(syms.get(i),gram));
@@ -84,7 +85,7 @@ public class LR1 {
 							eps_count++;
 						}
 						
-						//result的值就是所有可以推出ε的符号（直到不能）的first集的并
+						//result的值就是所有可以推出ε的符号(直到不能)的first集的并
 						for(int j=0;j<eps_count+1;j++){
 							if(j<pro.size()){
 								result.addAll(first(pro.get(j),gram));
@@ -136,7 +137,7 @@ public class LR1 {
 			//tempI为null意味着结束
 			
 			if(!tempI.isTerminal()){
-				//如果产生式当前项（即将要移近的下一项）是非终结符
+				//如果产生式当前项(即将要移近的下一项)是非终结符
 				
 				//找到这个非终结符的所有产生式并添加到queue中
 				for(int i=0;i<gram.size();i++){
@@ -152,7 +153,7 @@ public class LR1 {
 						
 						//对每个lookahead进行循环
 						for(int j=0;j<tempI.getLookahead().size();j++){
-							//为了不改变sym_aft（要多次使用）此处对sym_aft进行clone
+							//为了不改变sym_aft(要多次使用)此处对sym_aft进行clone
 							ArrayList<Symbol> sym_aft_clone = (ArrayList<Symbol>)sym_aft.clone();
 							
 							//将sym_la和sym_aft连接起来，求first集，结果即是tempJ的lookahead
@@ -167,7 +168,7 @@ public class LR1 {
 						//如果这个产生式和之前的不重复，将其加入到队列中E-R-R-O-R
 						LR1Pro tempJ = new LR1Pro(gram.get(i).getLeftsymbol(), gram.get(i).getProduction(), gram.get(i).getLookahead(), gram.get(i).getPosition());
 						tempJ.setLookahead(sym_la);
-						if(!tempJ.equals(tempI)){
+						if(!tempJ.equals(tempI)&&!ifExist(tempJ,result)){
 							que.add(tempJ);
 						}
 					}
@@ -181,7 +182,7 @@ public class LR1 {
 			tempI = que.poll();
 		}
 		
-		//删除重复的产生式
+		//删除重复的产生式，并且合并只有lookahead不同的项
 		selDistProd(result);
 		return result;
 	}
@@ -268,7 +269,7 @@ public class LR1 {
 				//因为只有一项所以get(0)
 				LR1Pro red_item = LR1_items.get(i).get(0);
 				
-				//lookahead（可能有多个）决定要填入哪几列
+				//lookahead(可能有多个)决定要填入哪几列
 				for(int j=0;j<red_item.getLookahead().size();j++){
 					for(int k=0;k<symbols.size();k++){
 						//k是lookahead的symbol在整个符号表中的位置
@@ -330,7 +331,7 @@ public class LR1 {
 	 * Parameters	ArrayList<String[]> table:被打印的二维数组
 	 */
 	public void printTable(ArrayList<String[]> table){
-		System.out.print("\t");
+		System.out.print("--------------------This is the parsing table--------------------\n");
 		for(int i=0;i<table.get(0).length;i++){
 			System.out.print(symbols.get(i)+"\t");
 		}
@@ -364,7 +365,7 @@ public class LR1 {
 	/*	
 	 * Name			ifExist
 	 * Date			2014/05
-	 * Discribe		判断一个字符是否已经在序列中（在计算first集，判断一个文法符号是否能推导出ε时使用）
+	 * Discribe		判断一个字符是否已经在序列中(在计算first集，判断一个文法符号是否能推导出ε时使用)
 	 * Parameters	Symbol sym:被判断的string
 	 * 				ArrayList<Symbol> arr
 	 * Return		true:存在
@@ -379,6 +380,37 @@ public class LR1 {
 		}
 		return false;
 	}
+	
+	/*	
+	 * Name			ifExist
+	 * Date			2014/05
+	 * Discribe		判断一个LR1 item是否已经在数组中
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
+	 */
+	public boolean ifExist(LR1Item lr, ArrayList<LR1Item> ar){
+		for(int i=0;i<ar.size();i++){
+			if(lr.equals(ar.get(i))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/*	
+	 * Name			ifExist
+	 * Date			2014/05
+	 * Discribe		判断一个LR1 item是否已经在数组中
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
+	 */
+	public boolean ifExist(LR1Pro pro, ArrayList<LR1Pro> arr){
+		for(int i=0;i<arr.size();i++){
+			if(pro.equals(arr.get(i))){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	/*	
 	 * Name			selDistItem
@@ -402,9 +434,10 @@ public class LR1 {
 	
 	/*	
 	 * Name			selDistProd
-	 * Date			2014/05
-	 * Discribe		去除一个LR1项中的重复表达式
+	 * Date			2014/11/10
+	 * Discribe		去除一个LR1项中的重复表达式，并且合并只有lookahead不同的表达式
 	 * Parameters	ArrayList<Symbol> arr:LR1项中的产生式集合
+	 * E-R-R-O-R	存在必要性？
 	 */
 	public void selDistProd(ArrayList<LR1Pro> arr){
 		for(int i=0;i<arr.size();i++){
@@ -415,21 +448,15 @@ public class LR1 {
 				}
 			}
 		}
-	}
-	
-	/*	
-	 * Name			ifExist
-	 * Date			2014/05
-	 * Discribe		判断一个LR1 item是否已经在数组中
-	 * Parameters	ArrayList<Symbol> arr:文法符号数组
-	 */
-	public boolean ifExist(LR1Item lr, ArrayList<LR1Item> ar){
-		for(int i=0;i<ar.size();i++){
-			if(lr.equals(ar.get(i))){
-				return true;
+		for(int i=0;i<arr.size();i++){
+			for(int j=i+1;j<arr.size();j++){
+				if(arr.get(j).equalsExLa(arr.get(i))){
+					arr.get(i).addLookahead(arr.get(j).getLookahead());
+					arr.remove(j);
+					j--;
+				}
 			}
 		}
-		return false;
 	}
 	
 	//print
@@ -503,11 +530,11 @@ public class LR1 {
 		}
 		scan.close();
 		
+		//将Tsyms和Nsyms合并到symbols
 		symbols = new ArrayList<Symbol>();
 		symbols.addAll(Tsyms);
 		symbols.addAll(Nsyms);
 		symbols.add(new Symbol(0,"$"));
-		printList(symbols);
 		
 		return Gram;
 	}
@@ -515,8 +542,13 @@ public class LR1 {
 	public static void main(String[] args) {
 		LR1 la = new LR1();
 		LR1Item G = la.readInput();
+		System.out.println("-----------------------This is the grammar-----------------------");
 		System.out.println(G);
 		
-		System.out.println(la.items(G));
+		ArrayList<LR1Item> lr1item = la.items(G);
+		System.out.println("---------------------This is the LR(1) items---------------------");
+		for(int i=0;i<lr1item.size();i++){
+			System.out.println(lr1item.get(i));
+		}
 	}
 }
