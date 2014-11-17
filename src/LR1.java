@@ -4,6 +4,10 @@
 	Class		LR1
 	Describe	LR(1)项集生成
  */
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -29,7 +33,7 @@ public class LR1 {
 		int eps_count=0;
 		
 		//计算eps_count的值
-		while(eps_count<syms.size()&&ifExist(new Symbol(0),first(syms.get(eps_count),gram))){
+		while(eps_count<syms.size()&&ifExist(new Symbol(2),first(syms.get(eps_count),gram))){
 			eps_count++;
 		}
 		
@@ -81,7 +85,7 @@ public class LR1 {
 						result.add(new Symbol(2));
 					} else {
 						//计算eps_count的值
-						while(eps_count<pro.size()&&ifExist(new Symbol(0),first(pro.get(eps_count),gram))){				
+						while(eps_count<pro.size()&&ifExist(new Symbol(2),first(pro.get(eps_count),gram))){				
 							eps_count++;
 						}
 						
@@ -333,13 +337,17 @@ public class LR1 {
 	public void printTable(ArrayList<String[]> table){
 		System.out.print("--------------------This is the parsing table--------------------\n");
 		for(int i=0;i<table.get(0).length;i++){
-			System.out.print(symbols.get(i)+"\t");
+			System.out.print("\t"+symbols.get(i));
 		}
 		System.out.println();
 		for(int i=0;i<table.size();i++){
 			System.out.print("I"+i+"\t");
 			for(int j=0;j<table.get(0).length;j++){
-				System.out.print(table.get(i)[j]+"\t");
+				if(table.get(i)[j]==null){
+					System.out.print("\t");
+				} else {
+					System.out.print(table.get(i)[j]+"\t");
+				}
 			}
 			System.out.println();
 		}
@@ -539,16 +547,92 @@ public class LR1 {
 		return Gram;
 	}
 	
-	public static void main(String[] args) {
+	/*	
+	 * Name			readTxt
+	 * Date			2014/11/17
+	 * Discribe		读取txt中的产生式，并且构造文法符号集合
+	 */
+	public LR1Item readTxt() throws IOException{
+		//随意设定一个序号，代表输入的文法
+		LR1Item Gram = new LR1Item(999);
+		
+		//按行读取
+		File f = new File("PL0pro.txt");
+		BufferedReader br = new BufferedReader(new FileReader(f));
+		String nl = br.readLine();
+		
+		//Tsyms用来存储终结符,Nsyms用来存储非终结符
+		ArrayList<Symbol> Tsyms = new ArrayList<Symbol>();
+		ArrayList<Symbol> Nsyms = new ArrayList<Symbol>();
+		
+		
+		while(nl!=null){
+			//将文法符号按照@分开
+			String[] syms = nl.split("@");
+			
+			//第一个symbol为leftsymbol，之后的依次添加到production中
+			Symbol lsym = new Symbol(1, syms[0]);
+			
+			//添加符号表中没有的符号
+			if(!ifExist(lsym,Nsyms)){
+				Nsyms.add(lsym);
+			}
+			
+			ArrayList<Symbol> pro = new ArrayList<Symbol>();
+			for(int i=1;i<syms.length;i++){
+				Symbol sym;
+				if(syms[i].equals("0")){
+					//0表示ε
+					sym = new Symbol(2);
+				} else if(syms[i].charAt(0)!='!'){
+					//非终结符
+					sym = new Symbol(1, syms[i]);
+					//添加符号表中没有的符号
+					if(!ifExist(sym,Nsyms)){
+						Nsyms.add(sym);
+					}
+				} else {
+					//终结符
+					sym = new Symbol(0, syms[i].substring(1));
+					//添加符号表中没有的符号
+					if(!ifExist(sym,Tsyms)){
+						Tsyms.add(sym);
+					}
+				}
+				pro.add(sym);
+			}
+			
+			//将读取的产生式添加到Gram中
+			Gram.add(new LR1Pro(lsym, pro));
+			
+			//继续读下一行
+			nl = br.readLine();
+		}
+		br.close();
+		
+		//将Tsyms和Nsyms合并到symbols
+		symbols = new ArrayList<Symbol>();
+		symbols.addAll(Tsyms);
+		symbols.addAll(Nsyms);
+		symbols.add(new Symbol(0,"$"));
+		printList(symbols);
+		
+		return Gram;
+	}
+	
+	
+	public static void main(String[] args) throws IOException {
 		LR1 la = new LR1();
+		System.out.println("Please input:");
 		LR1Item G = la.readInput();
+		/*LR1Item G = la.readTxt();*/
 		System.out.println("-----------------------This is the grammar-----------------------");
 		System.out.println(G);
 		
 		ArrayList<LR1Item> lr1item = la.items(G);
 		System.out.println("---------------------This is the LR(1) items---------------------");
 		for(int i=0;i<lr1item.size();i++){
-			System.out.println(lr1item.get(i));
+			System.out.print(lr1item.get(i));
 		}
 	}
 }
