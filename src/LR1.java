@@ -67,7 +67,7 @@ public class LR1 {
 		//定义返回值
 		ArrayList<Symbol> result = new ArrayList<Symbol>();
 		
-		if(isTerminal(sym)){
+		if(sym.getTml()==0){
 			//终结符号，直接返回s
 			result.add(sym);
 		} else {
@@ -169,10 +169,10 @@ public class LR1 {
 						//删除重复的项目
 						selDistItem(sym_la);
 						
-						//如果这个产生式和之前的不重复，将其加入到队列中E-R-R-O-R
+						//如果这个产生式和队列中，result和tempI不重复，将其加入到队列中
 						LR1Pro tempJ = new LR1Pro(gram.get(i).getLeftsymbol(), gram.get(i).getProduction(), gram.get(i).getLookahead(), gram.get(i).getPosition());
 						tempJ.setLookahead(sym_la);
-						if(!tempJ.equals(tempI)&&!ifExist(tempJ,result)){
+						if(!tempJ.equals(tempI)&&!ifExist(tempJ,result)&&!ifExist(tempJ,que)){
 							que.add(tempJ);
 						}
 					}
@@ -187,7 +187,7 @@ public class LR1 {
 		}
 		
 		//删除重复的产生式，并且合并只有lookahead不同的项
-		selDistProd(result);
+		megerPro(result);
 		return result;
 	}
 	
@@ -210,7 +210,7 @@ public class LR1 {
 			//防止浅clone||deep clone
 			LR1Pro pros_clone = new LR1Pro(pros.get(i).getLeftsymbol(), pros.get(i).getProduction(), pros.get(i).getLookahead(), pros.get(i).getPosition());
 			
-			//第一个if的作用不明E-R-R-O-R??????????????????????????????????????????????????????????????????????
+			//第一个if用来放置数组越界，因为遇到规约的产生式也会尝试去移动(虽然不会有任何结果)，此时要获得"."后面的符号会导致越界报错
 			if(pros_clone.getPosition()<pros_clone.getProduction().size()){
 				//移近||shift
 				if(pros_clone.getProduction().get(pros_clone.getPosition()).equals(sym)){
@@ -259,17 +259,11 @@ public class LR1 {
 		//loop
 		int num = 1;
 		for(int i=0;i<LR1_items.size();i++){
-			//判断是否为规约项
-			boolean isReduce = false;
 			
 			//规约项只能有一条，因此size为1;同时这一条"."所在的位置在产生式最后
-			//isReduce的存在意义E-R-R-O-R
 			if(LR1_items.get(i).size()==1&&LR1_items.get(i).get(0).getPosition()==LR1_items.get(i).get(0).getProduction().size()){
-				isReduce = true;
-			}
-			
-			//是规约项，将"r+产生式的编号"加入表中
-			if(isReduce){
+				//是规约项，将"r+产生式的编号"加入表中
+				
 				//因为只有一项所以get(0)
 				LR1Pro red_item = LR1_items.get(i).get(0);
 				
@@ -279,10 +273,10 @@ public class LR1 {
 						//k是lookahead的symbol在整个符号表中的位置
 						if(red_item.getLookahead().get(j).equals(symbols.get(k))){
 							//red_num是产生式的编号
-							//break???E-R-R-O-R
 							for(int red_num=0;red_num<gram.size();red_num++){
 								if(red_item.equalsExLa(gram.get(red_num))){
 									parsingTable.get(i)[k] = "r"+red_num;
+									break;
 								}
 							}
 						}
@@ -293,7 +287,6 @@ public class LR1 {
 			//对符号表中的所有符号尝试进行Goto
 			for(int j=0;j<symbols.size();j++){
 				//Goto之后的项目存放到items_goto中
-				//item_goto的存在意义？E-R-R-O-R
 				ArrayList<LR1Pro> item_goto = Goto(LR1_items.get(i), symbols.get(j), gram);
 				LR1Item items_goto = new LR1Item(num);
 				items_goto.setArray(item_goto);
@@ -354,23 +347,6 @@ public class LR1 {
 	}
 	
 	/*	
-	 * Name			isTerminal
-	 * Date			2014/05
-	 * Discribe		判断一个符号是否为终结符
-	 * Parameters	Symbol sym:被判断的符号
-	 * Return		true:终结符
-	 * 				false:非终结符
-	 * E-R-R-O-R	存在意义稀薄，考虑废除？
-	 */
-	public boolean isTerminal(Symbol sym){
-		if(sym.getTml()==0){
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	/*	
 	 * Name			ifExist
 	 * Date			2014/05
 	 * Discribe		判断一个字符是否已经在序列中(在计算first集，判断一个文法符号是否能推导出ε时使用)
@@ -378,7 +354,6 @@ public class LR1 {
 	 * 				ArrayList<Symbol> arr
 	 * Return		true:存在
 	 * 				false：不存在
-	 * E-R-R-O-R	存在意义稀薄，考虑废除？
 	 */
 	public boolean ifExist(Symbol sym,ArrayList<Symbol> arr){
 		for(int i=0;i<arr.size();i++){
@@ -408,6 +383,22 @@ public class LR1 {
 	 * Name			ifExist
 	 * Date			2014/05
 	 * Discribe		判断一个LR1 item是否已经在数组中
+	 * Parameters	ArrayList<Symbol> arr:文法符号数组
+	 */
+	public boolean ifExist(LR1Pro pro, Queue<LR1Pro> que){
+		ArrayList<LR1Pro> quelist = new ArrayList<LR1Pro>(que);
+		for(int i=0;i<quelist.size();i++){
+			if(quelist.get(i).equals(pro)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/*	
+	 * Name			ifExist
+	 * Date			2014/05
+	 * Discribe		判断一个LR1 item是否已经在队列中
 	 * Parameters	ArrayList<Symbol> arr:文法符号数组
 	 */
 	public boolean ifExist(LR1Pro pro, ArrayList<LR1Pro> arr){
@@ -441,24 +432,16 @@ public class LR1 {
 	}
 	
 	/*	
-	 * Name			selDistProd
-	 * Date			2014/11/10
-	 * Discribe		去除一个LR1项中的重复表达式，并且合并只有lookahead不同的表达式
+	 * Name			megerPro
+	 * Date			2014/11/24
+	 * Discribe		合并只有lookahead不同的表达式
 	 * Parameters	ArrayList<Symbol> arr:LR1项中的产生式集合
-	 * E-R-R-O-R	存在必要性？
 	 */
-	public void selDistProd(ArrayList<LR1Pro> arr){
+	public void megerPro(ArrayList<LR1Pro> arr){
 		for(int i=0;i<arr.size();i++){
 			for(int j=i+1;j<arr.size();j++){
-				if(arr.get(i).equals(arr.get(j))){
-					arr.remove(j);
-					j--;
-				}
-			}
-		}
-		for(int i=0;i<arr.size();i++){
-			for(int j=i+1;j<arr.size();j++){
-				if(arr.get(j).equalsExLa(arr.get(i))){
+				//如果产生式除了la都相同(包括.的位置)
+				if(arr.get(j).equalsExLa(arr.get(i))&&arr.get(j).getPosition()==arr.get(i).getPosition()){
 					arr.get(i).addLookahead(arr.get(j).getLookahead());
 					arr.remove(j);
 					j--;
@@ -624,8 +607,8 @@ public class LR1 {
 	public static void main(String[] args) throws IOException {
 		LR1 la = new LR1();
 		System.out.println("Please input:");
-		LR1Item G = la.readInput();
-		/*LR1Item G = la.readTxt();*/
+//		LR1Item G = la.readInput();
+		LR1Item G = la.readTxt();
 		System.out.println("-----------------------This is the grammar-----------------------");
 		System.out.println(G);
 		
