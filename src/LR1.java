@@ -540,7 +540,7 @@ public class LR1 {
 		LR1Item Gram = new LR1Item(999);
 		
 		//∞¥––∂¡»°
-		File f = new File("PL0pro.txt");
+		File f = new File("Productions.txt");
 		BufferedReader br = new BufferedReader(new FileReader(f));
 		String nl = br.readLine();
 		
@@ -607,8 +607,8 @@ public class LR1 {
 	public static void main(String[] args) throws IOException {
 		LR1 la = new LR1();
 		System.out.println("Please input:");
-//		LR1Item G = la.readInput();
-		LR1Item G = la.readTxt();
+		LR1Item G = la.readInput();
+//		LR1Item G = la.readTxt();
 		System.out.println("-----------------------This is the grammar-----------------------");
 		System.out.println(G);
 		
